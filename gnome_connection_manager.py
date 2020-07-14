@@ -287,6 +287,7 @@ class conf():
     AUTO_COPY_SELECTION = 0
     LOG_PATH = os.path.expanduser("~")
     SHOW_TOOLBAR = True
+    SHOW_MENU = True
     SHOW_PANEL = True
     VERSION = 0
     UPDATE_TITLE = 0
@@ -540,6 +541,7 @@ class Wmain(SimpleGladeApp):
         if conf.LEFT_PANEL_WIDTH!=0:
             self.set_panel_visible(conf.SHOW_PANEL)
         self.set_toolbar_visible(conf.SHOW_TOOLBAR)
+        self.set_menu_visible(conf.SHOW_MENU)
         
         #a veces no se posiciona correctamente con 400 ms, asi que se repite el llamado 
         GLib.timeout_add(400, lambda : self.hpMain.set_position(conf.LEFT_PANEL_WIDTH))
@@ -781,8 +783,8 @@ class Wmain(SimpleGladeApp):
                 break
         if pos==-1:
             self.search['index'] = len(self.search['lines']) if backwards else 0
-    
-    
+
+
     def init_search(self):
         if hasattr(self, 'search') and self.search and self.get_widget('txtSearch').get_text() == self.search['word'] and self.current == self.search['terminal']:                        
             return  True
@@ -950,6 +952,10 @@ class Wmain(SimpleGladeApp):
             if not self.set_terminal_logger(term, widget.get_active()):
                 widget.set_active(False)
             return True
+
+        elif item == 'TM':  # ENABLE/DISABLE MENUBAR
+            self.set_menu_visible(True)
+            return True
                 
     def createMenu(self):
         self.popupMenu = Gtk.Menu()
@@ -992,7 +998,12 @@ class Wmain(SimpleGladeApp):
         menuItem = Gtk.MenuItem()
         self.popupMenu.append(menuItem)
         menuItem.show()
-        
+
+        self.popupMenu.mnuEnable = menuItem = Gtk.CheckMenuItem(label=_("Enable Menu"))
+        self.popupMenu.append(menuItem)
+        menuItem.connect("activate", self.on_popupmenu, 'TM')
+        menuItem.show()
+
         self.popupMenu.mnuReset = menuItem = Gtk.ImageMenuItem(label=_("Reiniciar consola"))
         menuItem.set_image(Gtk.Image.new_from_icon_name(Gtk.STOCK_NEW, Gtk.IconSize.MENU))
         self.popupMenu.append(menuItem)
@@ -1496,6 +1507,7 @@ class Wmain(SimpleGladeApp):
             conf.AUTO_CLOSE_TAB = cp.getint("options", "auto-close-tab")
             conf.SHOW_PANEL = cp.getboolean("window", "show-panel")
             conf.SHOW_TOOLBAR = cp.getboolean("window", "show-toolbar")
+            conf.SHOW_MENU = cp.getboolean("window", "show-menu")
             conf.STARTUP_LOCAL = cp.getboolean("options","startup-local")
             conf.CONFIRM_ON_CLOSE_TAB_MIDDLE = cp.getboolean("options", "confirm-close-tab-middle")
             conf.TERM = cp.get("options", "term")
@@ -1706,6 +1718,7 @@ class Wmain(SimpleGladeApp):
         cp.set("window", "window-height", -1 if self.wMain.is_maximized() else conf.WINDOW_HEIGHT)
         cp.set("window", "show-panel", conf.SHOW_PANEL)
         cp.set("window", "show-toolbar", conf.SHOW_TOOLBAR)
+        cp.set("window", "show-menu", conf.SHOW_MENU)
         
         i=1
         for grupo in groups:
@@ -1898,6 +1911,14 @@ class Wmain(SimpleGladeApp):
             self.get_widget("toolbar1").hide()
         self.get_widget("show_toolbar").set_active(visibility)
         conf.SHOW_TOOLBAR = visibility
+
+    def set_menu_visible(self, visibility):
+        if visibility:
+            self.get_widget("menubar1").show()
+        else:
+            self.get_widget("menubar1").hide()
+        self.get_widget("show_menu").set_active(visibility)
+        conf.SHOW_MENU = visibility
         
     #-- Wmain custom methods }
 
@@ -2006,6 +2027,11 @@ class Wmain(SimpleGladeApp):
     def on_show_toolbar_toggled(self, widget, *args):
         self.set_toolbar_visible(widget.get_active())
     #-- Wmain.on_show_toolbar_activate }
+
+    #-- Wmain.on_show_menu_activate {
+    def on_show_menu_toggled(self, widget, *args):
+        self.set_menu_visible(widget.get_active())
+    #-- Wmain.on_show_menu_activate }
 
     #-- Wmain.on_show_panel_activate {
     def on_show_panel_toggled(self, widget, *args):

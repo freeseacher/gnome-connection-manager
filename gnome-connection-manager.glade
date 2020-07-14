@@ -2409,6 +2409,16 @@ if not, write to the Free Software Foundation, Inc.,
                         <signal name="toggled" handler="on_show_panel_toggled" swapped="no"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="show_menu">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Mostrar Menu</property>
+                        <property name="use_underline">True</property>
+                        <property name="active">True</property>
+                        <signal name="toggled" handler="on_show_menu_toggled" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
